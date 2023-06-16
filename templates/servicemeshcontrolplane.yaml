@@ -1,0 +1,214 @@
+apiVersion: maistra.io/v2
+kind: ServiceMeshControlPlane
+metadata:
+  name: {{ $.Values.smcp.name }}
+  namespace: {{ $.Values.smcp.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  addons:
+    grafana:
+      enabled: {{ $.Values.grafana.enabled }}
+    jaeger:
+      install:
+        storage:
+          type: {{ $.Values.grafana.enabled }}
+      name: {{ $.Values.grafana.enabled }}
+    kiali:
+      enabled: {{ $.Values.kiali.enabled }}
+    prometheus:
+      enabled: {{ $.Values.prometheus.enabled }}
+      install:
+        retention: {{ $.Values.prometheus.retention }}
+        scrapeInterval: {{ $.Values.prometheus.scrapeInterval }}
+        service:
+          ingress:
+            enabled: {{ $.Values.prometheus.ingress }}
+          metadata:
+            annotations:
+              service.alpha.openshift.io/serving-cert-secret-name: {{ $.Values.prometheus.secretName }}
+  gateways:
+    additionalEgress:
+      {{- range $aename, $ae := $.Values.additionalEgress }}
+      {{ $aename }}:
+        enabled: {{ $ae.enabled }}
+        namespace: {{ $ae.namespace }}
+        routerMode: {{ $ae.routerMode }}
+        runtime:
+          container:
+            resources:
+              limits:
+                cpu: {{ $ae.resources.limits.cpu }}
+                memory: {{ $ae.resources.limits.memory }}
+              requests:
+                cpu: {{ $ae.resources.requests.cpu }}
+                memory: {{ $ae.resources.requests.memory }}
+          deployment:
+            autoScaling:
+              enabled: {{ $ae.autoScaling.enabled }}
+            replicas: {{ $ae.replicas }}
+            strategy:
+              rollingUpdate:
+                maxSurge: {{ $ae.strategy.rollingUpdate.maxSurge }}
+                maxUnavailable: {{ $ae.strategy.rollingUpdate.maxUnavailable }}
+              type: {{ $ae.strategy.type }}
+          pod:
+            metadata:
+              labels:
+                {{- range $key, $val := $ae.labels }}
+                {{ $key }}: {{ $val }}
+                {{- end }}
+            nodeSelector:
+              {{ $ae.nodeSelector.key }}: {{ $ae.nodeSelector.val }}
+            tolerations:
+            {{- range $key, $val := $ae.tolerations }}
+            - effect: {{ $key }}
+              key: {{ $val.key }}
+              value: {{ $val.value }}
+            {{- end }}
+        service:
+          metadata:
+            labels:
+              {{- range $key, $val := $ae.labels }}
+              {{ $key }}: {{ $val }}
+              {{- end }}
+          ports:
+          {{- range $key, $val := $ae.ports }}
+          - name: {{ $key }}
+            port: {{ $val.port }}
+            protocol: {{ $val.protocol }}
+            targetPort: {{ $val.targetPort }}
+          {{- end }}
+          type: ClusterIP
+        volumes:
+        {{- range $key, $val := $ae.volumes }}
+        - volume:
+            secret:
+              secretName: {{ $val.secretName }}
+          volumeMount:
+            mountPath: {{ $val.mountPath }}
+            name: {{ $key }}
+        {{- end }}
+      {{- end }}
+    additionalIngress:
+      {{- range $ainame, $ai := $.Values.additionalIngress }}
+      {{ $ainame }}:
+        enabled: {{ $ai.enabled }}
+        namespace: {{ $ai.namespace }}
+        runtime:
+          container:
+            resources:
+              limits:
+                cpu: {{ $ai.resources.limits.cpu }}
+                memory: {{ $ai.resources.limits.memory }}
+              requests:
+                cpu: {{ $ai.resources.requests.cpu }}
+                memory: {{ $ai.resources.requests.memory }}
+          deployment:
+            autoScaling:
+              enabled: {{ $ai.autoScaling.enabled }}
+            replicas: {{ $ai.replicas }}
+            strategy:
+              rollingUpdate:
+                maxSurge: {{ $ai.strategy.rollingUpdate.maxSurge }}
+                maxUnavailable: {{ $ai.strategy.rollingUpdate.maxUnavailable }}
+              type: {{ $ai.strategy.type }}
+          pod:
+            metadata:
+              labels:
+                {{- range $key, $val := $ai.labels }}
+                {{ $key }}: {{ $val }}
+                {{- end }}
+            nodeSelector:
+              {{ $ai.nodeSelector.key }}: {{ $ai.nodeSelector.val }}
+            tolerations:
+            {{- range $key, $val := $ai.tolerations }}
+            - effect: {{ $key }}
+              key: {{ $val.key }}
+              value: {{ $val.value }}
+            {{- end }}
+        service:
+          metadata:
+            labels:
+              {{- range $key, $val := $ai.labels }}
+              {{ $key }}: {{ $val }}
+              {{- end }}
+          ports:
+          {{- range $key, $val := $ai.ports }}
+          - name: {{ $key }}
+            port: {{ $val.port }}
+            protocol: {{ $val.protocol }}
+            targetPort: {{ $val.targetPort }}
+          {{- end }}
+          type: ClusterIP
+        volumes:
+        {{- range $key, $val := $ai.volumes }}
+        - volume:
+            secret:
+              secretName: {{ $val.secretName }}
+          volumeMount:
+            mountPath: {{ $val.mountPath }}
+            name: {{ $key }}
+        {{- end }}
+      {{- end }}
+    egress:
+      enabled: {{ $.Values.defaultGateways.egress.enabled }}
+      service: {{ $.Values.defaultGateways.egress.service }}
+    ingress:
+      enabled: {{ $.Values.defaultGateways.ingress.enabled }}
+      ingress: {{ $.Values.defaultGateways.ingress.ingress }}
+      service: {{ $.Values.defaultGateways.ingress.service }}
+    openshiftRoute:
+      enabled: {{ $.Values.defaultGateways.openshiftRoute.enabled }}
+  general:
+    logging:
+      componentLevels:
+        default: {{ $.Values.general.logging }}
+    validationMessages: {{ $.Values.general.validationMessages }}
+  policy:
+    type: Istiod
+  profiles:
+  - default
+  proxy:
+    logging:
+      level: {{ $.Values.proxy.logging }}
+    networking:
+      trafficControl:
+        outbound:
+          policy: {{ $.Values.proxy.policy }}
+    runtime:
+      container:
+        resources:
+          limits:
+            cpu: {{ $.Values.proxy.resources.limits.cpu }}
+            memory: {{ $.Values.proxy.resources.limits.memory }}
+          requests:
+            cpu: {{ $.Values.proxy.resources.requests.cpu }}
+            memory: {{ $.Values.proxy.resources.requests.cpu }}
+  runtime:
+    components:
+      pilot:
+        container:
+          resources:
+            limits:
+              cpu: {{ $.Values.pilot.resources.limits.cpu }}
+              memory: {{ $.Values.pilot.resources.limits.memory }}
+            requests:
+              cpu: {{ $.Values.pilot.resources.requests.cpu }}
+              memory: {{ $.Values.pilot.resources.requests.memory }}
+        deployment:
+          autoScaling:
+            enabled: {{ $.Values.pilot.deployment.autoScaling.enabled }}
+          replicas: {{ $.Values.pilot.deployment.replicas }}
+  security:
+    controlPlane:
+      mtls: {{ $.Values.security.controlPlane.mtls }}
+    dataPlane:
+      automtls: {{ $.Values.security.dataPlane.automtls }}
+      mtls: {{ $.Values.security.dataPlane.mtls }}
+  telemetry:
+    type: Istiod
+  tracing:
+    sampling: {{ $.Values.jaeger.sampling }}
+    type: Jaeger
+  version: {{ $.Values.smcp.version }}

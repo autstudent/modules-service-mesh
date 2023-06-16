@@ -1,0 +1,25 @@
+{{- range $gwname, $gw := $.Values.gateways }}
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: {{ $gwname }}
+  namespace: {{ $gw.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  selector:
+    {{- range $key, $val := $gw.selector }}
+    {{ $key }}: {{ $val }}
+    {{- end }}
+  servers:
+  {{- range $key, $val := $gw.servers }}
+  - hosts:
+    - {{ $key }}
+    port:
+      name: {{ $val.port.name }}
+      number: {{ $val.port.number }}
+      protocol: {{ $val.port.protocol }}
+    tls:
+      mode: {{ $val.tls.mode }}
+  {{- end }}
+{{- end }}

@@ -1,0 +1,110 @@
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: jaeger-distributed
+  namespace: istio-system
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  agent:
+    config: {}
+    options: {}
+    resources: {}
+  allInOne:
+    config: {}
+    metricsStorage: {}
+    options: {}
+    resources: {}
+  collector:
+    config: {}
+    kafkaSecretName: ""
+    options: {}
+    resources: {}
+  ingester:
+    config: {}
+    kafkaSecretName: ""
+    options: {}
+    resources: {}
+  ingress:
+    enabled: true
+    openshift:
+      htpasswdFile: /etc/proxy/htpasswd/auth
+      sar: '{"namespace": "istio-system", "resource": "pods", "verb": "get"}'
+    options: {}
+    resources: {}
+    security: oauth-proxy
+  query:
+    metricsStorage: {}
+    options: {}
+    resources: {}
+  resources:
+    limits:
+      cpu: "4"
+      memory: 8Gi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  sampling:
+    options: {}
+  storage:
+    cassandraCreateSchema: {}
+    dependencies:
+      enabled: false
+      resources: {}
+      schedule: 55 23 * * *
+    elasticsearch:
+      name: elasticsearch
+      nodeCount: 3
+      redundancyPolicy: SingleRedundancy
+      resources:
+        limits:
+          memory: 16Gi
+        requests:
+          cpu: "1"
+          memory: 16Gi
+      storage: {}
+    esIndexCleaner:
+      enabled: true
+      numberOfDays: 7
+      resources: {}
+      schedule: 55 23 * * *
+    esRollover:
+      resources: {}
+      schedule: 0 0 * * *
+    grpcPlugin: {}
+    options:
+      es:
+        index-prefix: environment-example-01
+        server-urls: http://elastic.example.com:9200
+    type: elasticsearch
+  strategy: production
+  ui:
+    options:
+      dependencies:
+        menuEnabled: false
+      menu:
+      - items:
+        - label: Documentation
+          url: https://access.redhat.com/documentation/en-us/openshift_container_platform/4.9/html/distributed_tracing/index
+        label: About
+      - anchorTarget: _self
+        label: Log Out
+        url: /oauth/sign_in
+  volumeMounts:
+  - mountPath: /etc/proxy/htpasswd
+    name: secret-htpasswd
+  - mountPath: /etc/pki/ca-trust/extracted/pem/
+    name: trusted-ca-bundle
+    readOnly: true
+  volumes:
+  - name: secret-htpasswd
+    secret:
+      secretName: htpasswd
+  - configMap:
+      defaultMode: 420
+      items:
+      - key: ca-bundle.crt
+        path: tls-ca-bundle.pem
+      name: trusted-ca-bundle
+      optional: true
+    name: trusted-ca-bundle

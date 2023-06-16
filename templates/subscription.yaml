@@ -1,0 +1,15 @@
+{{- range $sub := $.Values.subscriptions }}
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: {{ $sub.name }}
+  namespace: openshift-operators
+spec:
+  channel: {{ $sub.channel }}
+  installPlanApproval: {{ $sub.installPlanApproval }}
+  name: {{ $sub.package }}
+  source: {{ $.Values.catalogSource.name }}
+  sourceNamespace: {{ $.Values.catalogSource.namespace }}
+  startingCSV: jaeger-operator.v1.38.0-2
+{{- end }}

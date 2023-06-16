@@ -1,0 +1,204 @@
+appName: service-mesh
+namespaceCreatedByHelm: true
+
+namespaces:
+- istio-system
+- egress-system
+
+catalogSource:
+  name: operator-catalog-4-10
+  namespace: openshift-marketplace
+  displayName: "RH Operator Catalog 4.10 (Disconnected)"
+  image: "registry.redhat.io/redhat/redhat-operator-index:v4.10"
+
+subscriptions:
+  jaeger:
+    channel: stable
+    installPlanApproval: Manual
+    name: jaeger-product
+    startingCSV: jaeger-operator.v1.38.0-2
+  kiali:
+    channel: stable
+    installPlanApproval: Manual
+    name: kiali-ossm
+    startingCSV: kiali-operator.v1.48.3
+  servicemesh:
+    channel: stable
+    installPlanApproval: Manual
+    name: servicemeshoperator
+    startingCSV: servicemeshoperator.v2.2.3
+
+smcp:
+  name: full-install
+  namespace: istio-system
+  version: v2.2
+
+jaeger:
+  enabled: true
+  name: jaeger-distributed
+  type: Elasticsearch
+  sampling: 10000
+
+kiali:
+  enabled: true
+
+prometheus:
+  enabled: true
+  retention: 24h
+  scrapeInterval: 15s
+  ingress: true
+  secretName: prometheus-tls
+
+grafana:
+  enabled: true
+
+defaultGateways:
+  egress:
+    enabled: true
+    service: {}
+  ingress:
+    enabled: false
+    ingress: false
+    service: {}
+  openshiftRoute:
+    enabled: false
+
+general:
+  logging: error
+  validationMessages: false
+
+proxy:
+  logging: error
+  policy: ALLOW_ANY
+  resources:
+    limits:
+      cpu: "2"
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+pilot:
+  resources:
+    limits:
+      cpu: "2"
+      memory: 4Gi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  deployment:
+    autoScaling:
+      enabled: false
+    replicas: 3
+
+security:
+  controlPlane:
+    mtls: true
+  dataPlane:
+    automtls: true
+    mtls: true
+
+additionalEgress:
+  elastic:
+    enabled: true
+    namespace: egress-system
+    routerMode: sni-dnat
+    labels:
+      example.com/selector-name: global
+      example.com/selector-namespace: egress-system
+      gatewayType: egress
+      istio: egressgateway
+    resources:
+      limits:
+        cpu: "2"
+        memory: 4Gi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    autoScaling:
+      enabled: false
+    replicas: 3
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: "1"
+        maxUnavailable: "0"
+    nodeSelector:
+      key: node-role.kubernetes.io/mesh
+      val: ""
+    tolerations:
+      NoSchedule:
+        key: node-role.kubernetes.io/mesh
+        value: reserved
+      NoExecute:
+        key: node-role.kubernetes.io/mesh
+        value: reserved
+    ports:
+      https-9200:
+        port: 9200
+        protocol: TCP
+        targetPort: 60005
+      https-9212:
+        port: 9212
+        protocol: TCP
+        targetPort: 60006
+    volumes:
+      my-secret:
+        secretName: my-secret
+        mountPath: /etc/certs/certs
+
+additionalIngress:
+  istio-ingressgateway-example:
+    enabled: true
+    namespace: istio-system
+    labels:
+      example.com/selector-name: istio-ingressgateway-example
+      example.com/selector-namespace: istio-system
+      gatewayType: ingress
+      istio: ingressgateway
+    resources:
+      limits:
+        cpu: "2"
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    autoScaling:
+      enabled: false
+    replicas: 3
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: "1"
+        maxUnavailable: "0"
+    nodeSelector:
+      key: node-role.kubernetes.io/mesh
+      val: ""
+    tolerations:
+      NoSchedule:
+        key: node-role.kubernetes.io/mesh
+        value: reserved
+      NoExecute:
+        key: node-role.kubernetes.io/mesh
+        value: reserved
+    ports:
+      https-9200:
+        port: 9200
+        protocol: TCP
+        targetPort: 60005
+
+gateways:
+  global-tcp:
+    namespace: egress-system
+    selector:
+      example.com/selector-name: global-tcp
+      example.com/selector-namespace: egress-system
+      istio: egressgateway
+    servers:
+      app.egress-system.svc.cluster.local:
+        port:
+          name: tcp-3060-codigo
+          number: 3060
+          protocol: TLS
+        tls:
+          mode: ISTIO_MUTUAL
