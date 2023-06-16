@@ -6,12 +6,10 @@ namespaces:
 - egress-system
 
 catalogSource:
-  name: redhat-operators
+  name: operator-catalog-4-9
   namespace: openshift-marketplace
-#  name: operator-catalog-4-10
-#  namespace: openshift-marketplace
-#  displayName: "RH Operator Catalog 4.10 (Disconnected)"
-#  image: "registry.redhat.io/redhat/redhat-operator-index:v4.10"
+  displayName: "RH Operator Catalog 4.9 (Disconnected)"
+  image: "registry.redhat.io/redhat/redhat-operator-index:v4.9"
 
 subscriptions:
   jaeger:
