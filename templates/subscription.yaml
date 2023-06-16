@@ -8,7 +8,7 @@ metadata:
 spec:
   channel: {{ $val.channel }}
   installPlanApproval: {{ $val.installPlanApproval }}
-  name: {{ $val.package }}
+  name: {{ $val.name }}
   source: {{ $.Values.catalogSource.name }}
   sourceNamespace: {{ $.Values.catalogSource.namespace }}
   startingCSV: {{ $val.startingCSV }}
