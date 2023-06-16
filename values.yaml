@@ -15,17 +15,17 @@ subscriptions:
   jaeger:
     channel: stable
     installPlanApproval: Manual
-    name: jaeger-product
+    package: jaeger-product
     startingCSV: jaeger-operator.v1.38.0-2
   kiali:
     channel: stable
     installPlanApproval: Manual
-    name: kiali-ossm
+    package: kiali-ossm
     startingCSV: kiali-operator.v1.48.3
   servicemesh:
     channel: stable
     installPlanApproval: Manual
-    name: servicemeshoperator
+    package: servicemeshoperator
     startingCSV: servicemeshoperator.v2.2.3
 
 smcp:
