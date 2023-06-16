@@ -6,27 +6,27 @@ namespaces:
 - egress-system
 
 catalogSource:
-  name: operator-catalog-4-9
+  name: operator-catalog-4-10
   namespace: openshift-marketplace
-  displayName: "RH Operator Catalog 4.9 (Disconnected)"
-  image: "registry.redhat.io/redhat/redhat-operator-index:v4.9"
+  displayName: "RH Operator Catalog 4.10 (Disconnected)"
+  image: "registry.redhat.io/redhat/redhat-operator-index:v4.10"
 
 subscriptions:
   jaeger:
     channel: stable
     installPlanApproval: Manual
     package: jaeger-product
-    startingCSV: jaeger-operator.v1.38.0-2
+    startingCSV: jaeger-operator.v1.42.0-5
   kiali:
     channel: stable
     installPlanApproval: Manual
     package: kiali-ossm
-    startingCSV: kiali-operator.v1.48.3
+    startingCSV: kiali-operator.v1.65.6
   servicemesh:
     channel: stable
     installPlanApproval: Manual
     package: servicemeshoperator
-    startingCSV: servicemeshoperator.v2.2.3
+    startingCSV: servicemeshoperator.v2.4.0-0
 
 smcp:
   name: full-install
