@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: approve-install-plans
-  namespace: default
+  namespace: openshift-operators
 #  annotations:
 #    argocd.argoproj.io/hook: PostSync
 spec:
