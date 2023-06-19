@@ -8,6 +8,7 @@ metadata:
 spec:
   template:
     spec:
+      serviceAccountName: approve-install-plans
       containers:
       - name: ose-cli
         image: registry.redhat.io/openshift4/ose-cli
@@ -18,4 +19,3 @@ spec:
           export namespace=openshift-operators
           export ips=$(oc get ip -n ${namespace} | grep Manual | grep false | awk '{print $1}')
           for ip in $(echo $ips); do oc -n ${namespace} patch installplan ${ip} -p '{"spec":{"approved":true}}' --type merge; done
-      restartPolicy: Never
