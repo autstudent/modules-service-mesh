@@ -1,32 +1,6 @@
-appName: service-mesh
-namespaceCreatedByHelm: true
-
 namespaces:
 - istio-system
 - egress-system
-
-catalogSource:
-  name: operator-catalog-4-10
-  namespace: openshift-marketplace
-  displayName: "RH Operator Catalog 4.10 (Disconnected)"
-  image: "registry.redhat.io/redhat/redhat-operator-index:v4.10"
-
-subscriptions:
-  jaeger:
-    channel: stable
-    installPlanApproval: Manual
-    name: jaeger-product
-    startingCSV: jaeger-operator.v1.42.0-5
-  kiali-ossm:
-    channel: stable
-    installPlanApproval: Manual
-    name: kiali-ossm
-    startingCSV: kiali-operator.v1.65.6
-  servicemesh:
-    channel: stable
-    installPlanApproval: Manual
-    name: servicemeshoperator
-    startingCSV: servicemeshoperator.v2.4.0
 
 smcp:
   name: full-install
@@ -55,11 +29,11 @@ grafana:
 defaultGateways:
   egress:
     enabled: true
-    service: {}
+    service: "{}"
   ingress:
     enabled: false
     ingress: false
-    service: {}
+    service: "{}"
   openshiftRoute:
     enabled: false
 
